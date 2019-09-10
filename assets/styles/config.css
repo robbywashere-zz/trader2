@@ -1,0 +1,44 @@
+.config {}
+
+input[type=checkbox] {
+  height: 0;
+  width: 0;
+  visibility: hidden;
+}
+
+label.switch {
+  cursor: pointer;
+  text-indent: -9999px;
+  margin-top: -25px;
+  width: 50px;
+  height: 25px;
+  background: grey;
+  display: block;
+  border-radius: 25px;
+  position: relative;
+}
+
+label.switch:after {
+  content: '';
+  position: absolute;
+  top: 1.25px;
+  left: 1.25px;
+  width: 22.5px;
+  height: 22.5px;
+  background: #fff;
+  border-radius: 22.5px;
+  transition: 0.3s;
+}
+
+input.switch:checked+label.switch {
+  background: #00d1b2;
+}
+
+input.switch:checked+label.switch:after {
+  left: calc(100% - 2.5px);
+  transform: translateX(-100%);
+}
+
+label.switch:active:after {
+  width: 32.5px;
+}

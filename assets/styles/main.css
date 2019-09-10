@@ -1,0 +1,31 @@
+.main {
+  margin: 50px;
+}
+
+.title {
+  font-size: 2rem;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+#indicator {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+}
+
+#indicator:after {
+  line-height: 14px;
+  content: " ";
+  width: 10px;
+  height: 10px;
+  display: block;
+  border-radius: 50%;
+  background: #CCC;
+}
+
+#indicator.on:after {
+  background: red;
+}
