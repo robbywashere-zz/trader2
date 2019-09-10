@@ -178,11 +178,13 @@ priv.post("/config", (req, res) => {
 
   const oldConfig = db.get('config').value();
   const enabled = (req.body.enabled === "on" ? true : false);
+  const debug = (req.body.debug === "on" ? true : false);
   //const apiKey = (req.body.apikey);
   const schedule = req.body.schedule.split(' ').filter(Boolean).join(' ');
   db.update('config', c => ({
     ...c,
     ...req.body,
+    debug,
     enabled,
     schedule
   })).write();
