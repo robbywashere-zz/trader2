@@ -17,6 +17,7 @@
 }
 
 #indicator:after {
+  margin-left: 5px;
   line-height: 14px;
   content: " ";
   width: 10px;

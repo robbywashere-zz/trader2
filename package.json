@@ -4,7 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "nodemon --ignore node_modules --ignore store.json --ignore log.json -e js,css"
+    "start": "HARD_DEBUG=true nodemon --ignore node_modules --ignore store.json --ignore log.json -e js,css"
   },
   "dependencies": {
     "bulma": "^0.7.5",

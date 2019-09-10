@@ -2,13 +2,15 @@ const is = (className, bool) => bool ? "is-" + className : "";
 module.exports = (pages) => ({
   active,
   enabled
-}) => /*html*/ `<nav class="navbar is-primary" >
+}) => /*html*/ `
+<nav class="navbar is-primary">
     <div class="container">
         <div class="navbar-brand">
             <div id="indicator" class="${enabled ? 'on' : 'off' }"></div>
             <a href="/home" class="navbar-item">
                Trader 
             </a>
+            ${burgerMenu}
         </div>
         <div class="navbar-menu" id="navMenu">
             <div class="navbar-start">
@@ -18,3 +20,10 @@ module.exports = (pages) => ({
         </div>
     </div>
 </nav>`
+
+const burgerMenu = /*html*/ `
+  <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navMenu">
+    <span aria-hidden="true"></span>
+    <span aria-hidden="true"></span>
+    <span aria-hidden="true"></span>
+  </a>`

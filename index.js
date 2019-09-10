@@ -29,6 +29,9 @@ const {
 } = require('./lib/db');
 const cookieParser = require('cookie-parser')
 
+
+//Constants 
+const HARD_DEBUG = process.env.HARD_DEBUG === "true"
 //Cronjob
 
 const CRON = new Cron(async () => {
@@ -98,6 +101,7 @@ class ServerError extends Error {
 // ASSETS
 
 const VENDOR_JS = '';
+const GLOBAL_JS = Script('global');
 const CONFIG_VENDOR_JS = Module('cronstrue/dist/cronstrue.min.js');
 const VENDOR_STYLE = Style('node_modules/bulma/css/bulma.min.css');
 const MAIN_STYLE = Style('main');
@@ -110,7 +114,7 @@ const NavBar = (active) => Partial('navbar')(['home', 'history', 'config', 'apik
 });
 
 const DynPage = (title, head = '', overRides = {}) => (context = {}) => Page('base')({
-  head: VENDOR_STYLE + MAIN_STYLE + Style(title) + VENDOR_JS + Script(title) + head,
+  head: VENDOR_STYLE + MAIN_STYLE + Style(title) + VENDOR_JS + GLOBAL_JS + Script(title) + head,
   navbar: NavBar(title),
   body: Page(title)(context),
   title,
@@ -170,7 +174,14 @@ priv.post('/apikeys', (req, res) => {
 priv.get('/apikeys', (req, res) => {
   res.send(DynPage('apikeys')({}));
 });
-
+priv.get("/config", (req, res) => res.send(DynPage('config', CONFIG_VENDOR_JS)({
+  config: {
+    ...db.get('config').value(),
+    hardDebug: HARD_DEBUG,
+    apiKeys: secrets.get('apiKeys').map('identifier').value(),
+    selectedKey: secrets.get('selectedKey').value()
+  }
+})));
 priv.post("/config", (req, res) => {
   const newKey = req.body.selectedKey;
   delete req.body.selectedKey;
@@ -178,7 +189,7 @@ priv.post("/config", (req, res) => {
 
   const oldConfig = db.get('config').value();
   const enabled = (req.body.enabled === "on" ? true : false);
-  const debug = (req.body.debug === "on" ? true : false);
+  const debug = HARD_DEBUG ? HARD_DEBUG : (req.body.debug === "on" ? true : false);
   //const apiKey = (req.body.apikey);
   const schedule = req.body.schedule.split(' ').filter(Boolean).join(' ');
   db.update('config', c => ({
@@ -213,12 +224,13 @@ priv.post("/profile", (req, res) => {
 
   let renderData = {
     errors: [],
-    flash: ""
+    flash: "",
+    email,
   };
 
   if (email.length || confirmEmail.length) {
-    if (password !== confirmPassword) renderData.errors.push({
-      message: 'emailss do not match',
+    if (email !== confirmEmail) renderData.errors.push({
+      message: 'emails do not match',
       name: 'email',
       value: email
     });
@@ -248,14 +260,6 @@ priv.post("/profile", (req, res) => {
 
 priv.get("/profile", (req, res) => res.send(DynPage('profile')({
   email: db.get('profile.email').value()
-})));
-
-priv.get("/config", (req, res) => res.send(DynPage('config', CONFIG_VENDOR_JS)({
-  config: {
-    ...db.get('config').value(),
-    apiKeys: secrets.get('apiKeys').map('identifier').value(),
-    selectedKey: secrets.get('selectedKey').value()
-  }
 })));
 
 priv.get("/home", (req, res) => res.send(StaticPage('home')));
@@ -328,6 +332,8 @@ app.use(function (error, req, res, next) {
 })
 
 // Start 
+
+if (HARD_DEBUG) db.set('config.debug', true).write();
 
 if (db.get('config.enabled').value()) {
   CRON.start(db.get('config.schedule').value());

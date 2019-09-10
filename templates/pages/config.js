@@ -10,13 +10,13 @@ module.exports = ({
       ${ConfigForm(config)}
     </div>
   </div>`;
-
 }
 
 function ConfigForm({
   schedule,
   amount,
   enabled,
+  hardDebug,
   apiKeys = [],
   selectedKey,
   debug,
@@ -55,7 +55,7 @@ function ConfigForm({
     <div class="field">
       <label class="label">debug mode</label>
       <input type="checkbox" id="debug" class="switch" name="debug" ${debug ? 'checked="checked"' : ''} />
-      <label for="debug" class="switch"></label>
+      <label for="debug" ${hardDebug?`onclick="return false"`:""} class="switch"></label>
     </div>
 
     <div class="field is-grouped">
