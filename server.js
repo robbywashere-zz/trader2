@@ -322,8 +322,8 @@ app.get('*', function (req, res) {
 });
 
 app.use(function (error, req, res, next) {
-  console.error(error);
   error.code = error.code || 500;
+  if (code >= 500) console.error(error);
   res.send(DynPage('error', '', {
     navbar: ''
   })({
