@@ -1,4 +1,7 @@
 const {
+  PORT = 3000, NODE_ENV
+} = process.env;
+const {
   formError
 } = require("./templates/helpers/formError");
 
@@ -31,7 +34,7 @@ const cookieParser = require('cookie-parser')
 
 
 //Constants 
-const HARD_DEBUG = process.env.HARD_DEBUG === "true"
+const HARD_DEBUG = process.env.HARD_DEBUG !== "true"
 //Cronjob
 
 const CRON = new Cron(async () => {
@@ -339,4 +342,4 @@ if (db.get('config.enabled').value()) {
 }
 
 
-app.listen(3000, () => console.log("Listening http://localhost:3000"));
+app.listen(PORT, () => console.log(NODE_ENV !== "production" ? `Listening http://localhost:${PORT}` : `Listening :${PORT}`));

@@ -53,7 +53,7 @@ function ConfigForm({
       <label for="enabled" class="switch"></label>
     </div>
     <div class="field">
-      <label class="label">debug mode</label>
+      <label class="label">dev mode</label>
       <input type="checkbox" id="debug" class="switch" name="debug" ${debug ? 'checked="checked"' : ''} />
       <label for="debug" ${hardDebug?`onclick="return false"`:""} class="switch"></label>
     </div>
