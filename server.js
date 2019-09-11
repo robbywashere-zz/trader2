@@ -34,7 +34,7 @@ const cookieParser = require('cookie-parser')
 
 
 //Constants 
-const HARD_DEBUG = process.env.HARD_DEBUG !== "true"
+const HARD_DEBUG = process.env.HARD_DEBUG === "true"
 //Cronjob
 
 const CRON = new Cron(async () => {
