@@ -4,6 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
+    "ping": "node background.js",
     "start": "HARD_DEBUG=true nodemon --ignore node_modules --ignore store.json --ignore log.json -e js,css server.js",
     "serve": "node server.js"
   },
