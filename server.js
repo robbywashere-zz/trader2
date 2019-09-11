@@ -302,7 +302,7 @@ app.post('/login', (req, res) => {
   } = db.get('profile').value();
 
   if (Compare(email, reqEmail) && Compare(passwordHash, Hash(reqPassword, passwordSalt))) {
-    res.cookie('authed', "true");
+    res.cookie('authed', "true",{ signed: true });
     res.redirect('/home');
   } else {
     res.send(DynPage('login', '', {
