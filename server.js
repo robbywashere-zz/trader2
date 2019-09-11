@@ -143,9 +143,7 @@ function ProtectedRouter(
 }
 
 const priv = ProtectedRouter((req, res, next) => {
-  if (req.cookies.authed === "true") {
-    return next();
-  }
+  if (req.signedCookies.authed === "true") return next();
   res.redirect('/login');
 });
 app.use(cookieParser(Secret()), priv);
