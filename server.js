@@ -342,4 +342,5 @@ if (db.get('config.enabled').value()) {
 }
 
 
-app.listen(PORT, () => console.log(NODE_ENV !== "production" ? `Listening http://localhost:${PORT}` : `Listening :${PORT}`));
+app.listen(PORT)
+//, () => console.log(NODE_ENV !== "production" ? `Listening http://localhost:${PORT}` : `Listening :${PORT}`));
