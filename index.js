@@ -59,33 +59,34 @@ function Partial(name) {
   return require(__dirname + `/templates/partials/${name}`);
 }
 
-function Asset(assetPath) {
+function Inline(assetPath) {
   return fs.readFileSync(path.resolve(__dirname, ...assetPath.split('/')));
 }
 
-
-function Tag({
-  name,
-  ext
-}) {
-  return (filePath) => `<${name}>
-    ${Asset((!~filePath.indexOf('node_modules') ? `assets/${name}s/` + filePath + ext : filePath))}
-  </${name}>`;
+function InlineAsset(assetPath) {
+  return Asset(filePath, true);
 }
 
-const Module = (path) => Tag({
-  name: 'script',
-  ext: '.js'
-})('node_modules/' + path);
+function srcUrl(filePath, type) {
+  return (!~filePath.indexOf('node_modules') ? (`/assets/${type}s/` + filePath) : (filePath));
+}
 
-const Style = Tag({
-  name: 'style',
-  ext: '.css'
-});
-const Script = Tag({
-  name: 'script',
-  ext: '.js'
-});
+function extension(filePath) {
+  return filePath.split('.').slice(-1)[0];
+}
+
+function Asset(filePath, inline = false) {
+  const ext = extension(filePath);
+  const src = srcUrl(filePath, ext === "css" ? "style" : (ext == "js") ? "script" : "UNKNOWN");
+  const tag = (ext === "js") ? "script" : (inline) ? "style" : "link";
+  const attr = inline ? "" : (ext === "js") ? `src="${src}"` : `href="${src}" rel="stylesheet"`;
+  return /*html*/ `<${tag} ${attr}>${inline ? Inline(src) : ""}</${tag}>`
+}
+
+app.use('/node_modules', express.static('node_modules'))
+
+app.use('/assets', express.static('assets'))
+
 
 // LIB 
 class ServerError extends Error {
@@ -100,12 +101,10 @@ class ServerError extends Error {
 
 // ASSETS
 
-const VENDOR_JS = '';
-const GLOBAL_JS = Script('global');
-const CONFIG_VENDOR_JS = Module('cronstrue/dist/cronstrue.min.js');
-const VENDOR_STYLE = Style('node_modules/bulma/css/bulma.min.css');
-const MAIN_STYLE = Style('main');
-const ERROR_STYLE = Style('error');
+const GLOBAL_JS = Asset('global.js');
+const CONFIG_VENDOR_JS = Asset('node_modules/cronstrue/dist/cronstrue.min.js');
+const VENDOR_STYLE = Asset('node_modules/bulma/css/bulma.min.css');
+const GLOBAL_STYLE = Asset('global.css');
 
 
 const NavBar = (active) => Partial('navbar')(['home', 'history', 'config', 'apikeys', 'profile'])({
@@ -114,7 +113,7 @@ const NavBar = (active) => Partial('navbar')(['home', 'history', 'config', 'apik
 });
 
 const DynPage = (title, head = '', overRides = {}) => (context = {}) => Page('base')({
-  head: VENDOR_STYLE + MAIN_STYLE + Style(title) + VENDOR_JS + GLOBAL_JS + Script(title) + head,
+  head: VENDOR_STYLE + GLOBAL_STYLE + Asset(title + '.css') + GLOBAL_JS + Asset(title + '.js') + head,
   navbar: NavBar(title),
   body: Page(title)(context),
   title,
