@@ -5,4 +5,4 @@ npm run serve
 export PORT=8000 && 
 export NODE_ENV=production && 
 (pkill -f trader2 || true) && 
-bash -c "exec -a trader2 node server.js" &
+bash -c "exec -a trader2 node server.js &" &
