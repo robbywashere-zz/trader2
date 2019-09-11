@@ -10,7 +10,7 @@ module.exports = ({
   <div>
     <strong>Message:</strong>
     <pre>
-      ${(process.env.NODE_ENV === 'production' ? error.message : error.stack)}
+      ${error.stack}
     </pre>
   </div>
 </div>`

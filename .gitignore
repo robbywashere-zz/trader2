@@ -1,3 +1,4 @@
 node_modules
+secrets/
 store.json
 log.json

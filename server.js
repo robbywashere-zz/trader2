@@ -30,11 +30,13 @@ const {
 const {
   db
 } = require('./lib/db');
+const https = require('https');
 const cookieParser = require('cookie-parser')
+const secret = (name) => fs.readFileSync(path.resolve(__dirname, 'secrets', name));
 
 
 //Constants 
-const HARD_DEBUG = process.env.HARD_DEBUG !== "true"
+const HARD_DEBUG = process.env.HARD_DEBUG === "true";
 //Cronjob
 
 const CRON = new Cron(async () => {
@@ -143,9 +145,7 @@ function ProtectedRouter(
 }
 
 const priv = ProtectedRouter((req, res, next) => {
-  if (req.cookies.authed === "true") {
-    return next();
-  }
+  if (req.signedCookies.authed === "true") return next();
   res.redirect('/login');
 });
 app.use(cookieParser(Secret()), priv);
@@ -302,7 +302,9 @@ app.post('/login', (req, res) => {
   } = db.get('profile').value();
 
   if (Compare(email, reqEmail) && Compare(passwordHash, Hash(reqPassword, passwordSalt))) {
-    res.cookie('authed', "true");
+    res.cookie('authed', "true", {
+      signed: true
+    });
     res.redirect('/home');
   } else {
     res.send(DynPage('login', '', {
@@ -322,9 +324,8 @@ app.get('*', function (req, res) {
 });
 
 app.use(function (error, req, res, next) {
-  //if (process.env.NODE_ENV !== "production")
-  console.error(error);
   error.code = error.code || 500;
+  if (error.code >= 500) console.error(error);
   res.send(DynPage('error', '', {
     navbar: ''
   })({
@@ -341,5 +342,10 @@ if (db.get('config.enabled').value()) {
   CRON.start(db.get('config.schedule').value());
 }
 
+const cert = secret('server.cert');
+const key = secret('server.key');
 
-app.listen(PORT, () => console.log(NODE_ENV !== "production" ? `Listening http://localhost:${PORT}` : `Listening :${PORT}`));
+(NODE_ENV === "production" ? https.createServer({
+  key,
+  cert
+}, app) : app).listen(PORT, () => console.log(NODE_ENV !== "production" ? `Listening http://localhost:${PORT}` : `Listening https://raider:${PORT}`));
