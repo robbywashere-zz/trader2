@@ -4,7 +4,8 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "HARD_DEBUG=true nodemon --ignore node_modules --ignore store.json --ignore log.json -e js,css"
+    "start": "HARD_DEBUG=true nodemon --ignore node_modules --ignore store.json --ignore log.json -e js,css server.js",
+    "serve": "(pkill -f trader2 || true) && bash -c \"exec -a trader2 PORT=8000 node server.js\""
   },
   "dependencies": {
     "bulma": "^0.7.5",
