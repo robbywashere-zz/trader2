@@ -322,7 +322,6 @@ app.get('*', function (req, res) {
 });
 
 app.use(function (error, req, res, next) {
-  //if (process.env.NODE_ENV !== "production")
   console.error(error);
   error.code = error.code || 500;
   res.send(DynPage('error', '', {
@@ -342,5 +341,4 @@ if (db.get('config.enabled').value()) {
 }
 
 
-app.listen(PORT)
-//, () => console.log(NODE_ENV !== "production" ? `Listening http://localhost:${PORT}` : `Listening :${PORT}`));
+app.listen(PORT, () => console.log(NODE_ENV !== "production" ? `Listening http://localhost:${PORT}` : `Listening :${PORT}`));

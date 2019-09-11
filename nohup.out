@@ -1,7 +1,0 @@
-nohup: npm run serve: No such file or directory
-nohup: npm run serve &>/dev/null &: No such file or directory
-nohup: npm run serve &>/dev/null &: No such file or directory
-
-> trader2@1.0.0 serve /Users/robby/etc/Projects/trader2
-> node server.js
-
