@@ -302,7 +302,9 @@ app.post('/login', (req, res) => {
   } = db.get('profile').value();
 
   if (Compare(email, reqEmail) && Compare(passwordHash, Hash(reqPassword, passwordSalt))) {
-    res.cookie('authed', "true",{ signed: true });
+    res.cookie('authed', "true", {
+      signed: true
+    });
     res.redirect('/home');
   } else {
     res.send(DynPage('login', '', {
@@ -323,7 +325,7 @@ app.get('*', function (req, res) {
 
 app.use(function (error, req, res, next) {
   error.code = error.code || 500;
-  if (code >= 500) console.error(error);
+  if (error.code >= 500) console.error(error);
   res.send(DynPage('error', '', {
     navbar: ''
   })({
