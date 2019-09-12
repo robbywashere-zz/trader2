@@ -7,7 +7,7 @@
     "ping": "node background.js",
     "start": "HARD_DEBUG=true nodemon --ignore node_modules --ignore store.json --ignore log.json -e js,css server.js",
     "serve": "node server.js",
-     "quickdeploy":"git add . && git commit --allow-empty -m \"deploy\" && git push webraider"
+    "quickdeploy": "git add . && git commit --allow-empty -m \"deploy\" && git push webraider"
   },
   "dependencies": {
     "bulma": "^0.7.5",

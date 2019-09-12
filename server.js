@@ -343,7 +343,7 @@ if (db.get('config.enabled').value()) {
 }
 
 const cert = secret('server.cert');
-const key = secret('server.cert');
+const key = secret('server.key');
 const serverInstance = NODE_ENV === "production" ? https.createServer({
   key,
   cert
