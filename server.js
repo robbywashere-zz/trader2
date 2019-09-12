@@ -30,7 +30,9 @@ const {
 const {
   db
 } = require('./lib/db');
+const https = require('https');
 const cookieParser = require('cookie-parser')
+const secret = (name) => fs.readFileSync(path.resolve(__dirname, 'secrets', name));
 
 
 //Constants 
@@ -340,5 +342,10 @@ if (db.get('config.enabled').value()) {
   CRON.start(db.get('config.schedule').value());
 }
 
-
-app.listen(PORT, () => console.log(NODE_ENV !== "production" ? `Listening http://localhost:${PORT}` : `Listening :${PORT}`));
+const cert = secret('server.cert');
+const key = secret('server.cert');
+const serverInstance = NODE_ENV === "production" ? https.createServer({
+  key,
+  cert
+}, app) : app;
+serverInstance.listen(PORT, () => console.log(NODE_ENV !== "production" ? `Listening http://localhost:${PORT}` : `Listening https://raider:${PORT}`));
