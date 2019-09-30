@@ -5,8 +5,12 @@
   "license": "MIT",
   "scripts": {
     "ping": "node background.js",
-    "start": "HARD_DEBUG=true nodemon --ignore node_modules --ignore store.json --ignore log.json -e js,css server.js",
-    "serve": "node server.js",
+    "start": "NODE_ENV=development HARD_DEBUG=true nodemon --ignore node_modules --ignore store.json --ignore log.json -e js,css server.js",
+    "start:prod": "NODE_ENV=production HARD_DEBUG=true nodemon --ignore node_modules --ignore store.json --ignore log.json -e js,css server.js",
+    "start:dev": "npm start",
+    "serve": "npm run serve:dev",
+    "serve:prod": "NODE_ENV=production node server.js",
+    "serve:dev": "NODE_ENV=development node server.js",
     "quickdeploy": "git add . && git commit --allow-empty -m \"deploy\" && git push webraider"
   },
   "dependencies": {
