@@ -344,8 +344,8 @@ if (db.get('config.enabled').value()) {
 
 const cert = secret('server.cert');
 const key = secret('server.key');
-const serverInstance = NODE_ENV === "production" ? https.createServer({
+
+(NODE_ENV === "production" ? https.createServer({
   key,
   cert
-}, app) : app;
-serverInstance.listen(PORT, () => console.log(NODE_ENV !== "production" ? `Listening http://localhost:${PORT}` : `Listening https://raider:${PORT}`));
+}, app) : app).listen(PORT, () => console.log(NODE_ENV !== "production" ? `Listening http://localhost:${PORT}` : `Listening https://raider:${PORT}`));
