@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-TARGET="/home/web/deploy"
-GIT_DIR="/home/web/app"
+TARGET="/home/web/www"
+GIT_DIR="/home/web/src"
 BRANCH="master"
 
 
