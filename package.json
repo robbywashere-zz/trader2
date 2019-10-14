@@ -12,7 +12,7 @@
     "stop":"",
     "serve:prod": "export NODE_ENV=production && node server.js",
     "serve:dev": "NODE_ENV=development node server.js",
-    "quickdeploy": "git add . && git commit --allow-empty -m \"deploy\" && git push webraider"
+    "quickdeploy": "git add . && git commit --allow-empty -m \"deploy\" && git push raider"
   },
   "dependencies": {
     "bulma": "^0.7.5",
