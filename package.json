@@ -13,7 +13,7 @@
     "copy:keys": "scp -i ~/.ssh/raider * web@raider:/home/web/secrets/",
     "serve:prod": "export NODE_ENV=production && node server.js",
     "serve:dev": "NODE_ENV=development node server.js",
-    "quickdeploy": "git add . && git commit --allow-empty -m \"deploy\" && git -f push web"
+    "quickdeploy": "git add . && git commit --allow-empty -m \"deploy\" && git push -f  web"
   },
   "dependencies": {
     "bulma": "^0.7.5",
