@@ -27,7 +27,7 @@ function APIKeysForm({
       value: Haiku(0),
       errors,
     })}
-    <label class="label">api-key</label>
+    <label class="label">apiKey</label>
     ${formTextInput({
       name: "apiKey",
       errors,

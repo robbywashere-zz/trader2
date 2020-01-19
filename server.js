@@ -20,17 +20,20 @@ const secret = name => fs.readFileSync(path.resolve(__dirname, 'secrets', name))
 const HARD_DEBUG = process.env.HARD_DEBUG === 'true';
 //Cronjob
 
-const CRON = new Cron(async () => {
+//@Cron
+const CRON = new Cron(async function(ctx) {
     const value = Number(db.get('config.amount').value());
     try {
-        const resp = await ExecuteBuyOrder(value);
+        const resp = await ExecuteBuyOrder(value, ctx);
     } catch (e) {
         console.error(e); //log
     }
 });
 
 function Trimmer(req, res, next) {
-    req.body = Object.fromEntries(Object.entries(req.body).map(([k, v]) => (typeof v === 'string' ? [k, v.trim()] : [k, v])));
+    req.body = Object.fromEntries(
+        Object.entries(req.body).map(([k, v]) => (typeof v === 'string' ? [k, v.trim()] : [k, v])),
+    );
     next();
 }
 
@@ -98,7 +101,13 @@ const NavBar = active =>
 
 const DynPage = (title, head = '', overRides = {}) => (context = {}) =>
     Page('base')({
-        head: VENDOR_STYLE + GLOBAL_STYLE + Asset(title + '.css') + GLOBAL_JS + Asset(title + '.js') + head,
+        head:
+            VENDOR_STYLE +
+            GLOBAL_STYLE +
+            Asset(title + '.css') +
+            GLOBAL_JS +
+            Asset(title + '.js') +
+            head,
         navbar: NavBar(title),
         body: Page(title)(context),
         title,
@@ -134,9 +143,22 @@ priv.get('/hello', (req, res) => res.send('hello world'));
 priv.get('/error', () => {
     throw new Error('!!!');
 });
+
+// function filterParams(arr, keys, ) {
+
+//   return keys.reduce(
+//     (p, k) => ({
+//       ...p,
+//       [k]: req.body[k],
+//     }), {},
+//   ),
+// }
+
 priv.post('/apikeys', (req, res) => {
     const keys = ['identifier', 'apiKey', 'passphrase', 'secret'];
-    const errors = keys.reduce((p, k) => [...p, !req.body[k].length ? k : null], []).filter(Boolean);
+    const errors = keys
+        .reduce((p, k) => [...p, !req.body[k].length ? k : null], [])
+        .filter(Boolean);
     const renderData = {
         errors: [],
         flash: '',
@@ -183,11 +205,10 @@ priv.get('/config', (req, res) =>
     ),
 );
 priv.post('/config', (req, res) => {
-    const newKey = req.body.selectedKey;
-    delete req.body.selectedKey;
+    const selectedKey = req.body.selectedKey; //value of drop down select
     const oldKey = secrets.get('selectedKey').value();
-
     const oldConfig = db.get('config').value();
+    const isNewKey = oldKey !== selectedKey;
     const enabled = req.body.enabled === 'on' ? true : false;
     const debug = HARD_DEBUG ? HARD_DEBUG : req.body.debug === 'on' ? true : false;
     //const apiKey = (req.body.apikey);
@@ -195,6 +216,8 @@ priv.post('/config', (req, res) => {
         .split(' ')
         .filter(Boolean)
         .join(' ');
+
+    delete req.body.selectedKey;
     db.update('config', c => ({
         ...c,
         ...req.body,
@@ -203,12 +226,20 @@ priv.post('/config', (req, res) => {
         schedule,
     })).write();
 
-    if (oldKey !== newKey) secrets.set('selectedKey', newKey).write();
+    if (isNewKey) secrets.set('selectedKey', selectedKey).write();
 
     const newConfig = db.get('config').value();
-    if (!deepEqual(newConfig, oldConfig) || oldKey !== newKey) {
+
+    if (!deepEqual(newConfig, oldConfig) || isNewKey) {
         if (newConfig.enabled) {
-            CRON.start(newConfig.schedule);
+            //get new key froom db
+            const ctx = secrets
+                .get('apiKeys')
+                .find({ identifier: selectedKey })
+                .value();
+            if (!ctx)
+                throw new Error(`ctx is undefined, unable to find api key id: ${selectedKey}`);
+            CRON.start(newConfig.schedule, ctx);
         } else {
             CRON.stop();
         }
@@ -309,7 +340,10 @@ app.post('/login', (req, res) => {
             DynPage('login', '', {
                 navbar: '',
             })({
-                errors: [formError('email', 'email or password is incorrect', reqEmail), formError('password', '')],
+                errors: [
+                    formError('email', 'email or password is incorrect', reqEmail),
+                    formError('password', ''),
+                ],
             }),
         );
     }
@@ -337,7 +371,8 @@ app.use(function(error, req, res, next) {
 if (HARD_DEBUG) db.set('config.debug', true).write();
 
 if (db.get('config.enabled').value()) {
-    CRON.start(db.get('config.schedule').value());
+    // Oops key would be gone CRON.start(db.get('config.schedule').value());
+    db.set('config.enabled', false).write();
 }
 
 const cert = secret('cert.pem');
@@ -352,4 +387,10 @@ const key = secret('cert.key');
           app,
       )
     : app
-).listen(PORT, () => console.log(NODE_ENV !== 'production' ? `Listening http://localhost:${PORT}` : `Listening https://raider:${PORT}`));
+).listen(PORT, () =>
+    console.log(
+        NODE_ENV !== 'production'
+            ? `Listening http://localhost:${PORT}`
+            : `Listening https://raider:${PORT}`,
+    ),
+);
