@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 npm install 
 export PORT=8000 && 
-(pkill -f trader2 || true) && 
+(killall node || true) && 
 bash -c "exec -a trader2 nohup npm run serve:prod >/dev/null 2>&1 &" 
 
