@@ -1,12 +1,27 @@
 const { formTextInput } = require('../helpers/formTextInput');
-module.exports = ({ config }) => {
+module.exports = ({ config, runonce_flash }) => {
     return /*html*/ `
   <div class="columns">
     <div class="column is-half">
       ${ConfigForm(config)}
     </div>
+  ${ConfigRunOnceFlash(runonce_flash)}
   </div>`;
 };
+
+function ConfigRunOnceFlash(body) {
+    if (!body) return '';
+    let parseBody;
+    try {
+        parseBody = typeof body === 'string' ? body : JSON.stringify(body, null, 4);
+    } catch (e) {
+        parseBody = body;
+    }
+    return /*html*/ `
+<div class="column is-half">
+  <pre>${body}</pre>
+</div>`;
+}
 
 function ConfigForm({
     schedule,
@@ -14,7 +29,7 @@ function ConfigForm({
     enabled,
     hardDebug,
     apiKeys = [],
-    selectedKey,
+    ident,
     debug,
     errors = {},
 } = {}) {
@@ -27,19 +42,26 @@ function ConfigForm({
         <input class="input" name="amount" value="${amount}" type="text" placeholder="$">
       </div>
     </div>
-    <label class="label" for="schedule">schedule</label>
-    <div class="field is-grouped">
-      <p class="control is-expanded">
-        <input autocomplete="off" onkeyup="evaluateSchedule()" class="input" id="schedule" name="schedule" value="${schedule}" type="text" placeholder="*****">
+    <div class="schedule">
+      <label class="label" for="schedule">schedule</label>
+      <div class="field is-grouped">
+        <p class="control is-expanded">
+          <input autocomplete="off" onkeyup="evaluateSchedule()" class="input" id="schedule" name="schedule" value="${schedule}" type="text" placeholder="*****">
+        </p>
+      </div>
+      <p>
+        <pre id="evaluate"></pre>
       </p>
     </div>
-    <p>
-      <pre id="evaluate"></pre>
-    </p>
+    <div class="field">
+      <label class="label">run once</label>
+      <input type="checkbox" id="runonce" class="switch" name="runonce"/>
+      <label for="runonce" class="switch"></label>
+    </div>
     <div class="field">
       <label class="label">api key</label>
       <div class="select">
-        ${ApiKeyList(apiKeys, selectedKey)}
+        ${ApiKeyList(apiKeys, ident)}
       </div>
     </div>
     <div class="field">
@@ -64,18 +86,18 @@ function ConfigForm({
       </div>
     </div>
   </form>
-  <br style="margin: 22px 0px"/>
-  <form action="/rfc/runonce">
-    <input type="submit" value="runonce" class="button is-link" />
-  </form>
   `;
 }
+// <br style="margin: 22px 0px"/>
+// <form action="/rfc/runonce">
+//   <input type="submit" value="runonce" class="button is-link" />
+// </form>
 
-function ApiKeyList(apiKeys = [], selectedKey) {
+function ApiKeyList(apiKeys = [], ident) {
     return /*html*/ `
-    <select name="selectedKey">
+    <select name="ident">
       ${apiKeys.map(
-          k => /*html*/ `<option value="${k}" ${k == selectedKey ? 'selected' : ''}>${k}</option>`,
+          k => /*html*/ `<option value="${k}" ${k == ident ? 'selected' : ''}>${k}</option>`,
       )}
     </select>`;
 }

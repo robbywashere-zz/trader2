@@ -21,14 +21,7 @@ const HARD_DEBUG = process.env.HARD_DEBUG === 'true';
 //Cronjob
 
 //@Cron
-const CRON = new Cron(async function(ctx) {
-    const value = Number(db.get('config.amount').value());
-    try {
-        const resp = await ExecuteBuyOrder(value, ctx);
-    } catch (e) {
-        console.error(e); //log
-    }
-});
+const CRON = new Cron(ctx => ExecuteBuyOrder(ctx));
 
 function Trimmer(req, res, next) {
     req.body = Object.fromEntries(
@@ -114,7 +107,24 @@ const DynPage = (title, head = '', overRides = {}) => (context = {}) =>
         ...overRides,
     });
 
-const DynBlankPage = (title, head) => DynPageWithNav(title, head);
+//PAGES
+
+const ConfigPage = ({ flash, config } = {}) =>
+    DynPage(
+        'config',
+        CONFIG_VENDOR_JS,
+    )({
+        runonce_flash: flash,
+        config: {
+            ...db.get('config').value(),
+            hardDebug: HARD_DEBUG,
+            apiKeys: secrets
+                .get('apiKeys')
+                .map('ident')
+                .value(),
+            ...config,
+        },
+    });
 
 app.use(
     bodyParser.urlencoded({
@@ -134,7 +144,7 @@ function ProtectedRouter(vetter, router = new express.Router()) {
 }
 
 const priv = ProtectedRouter((req, res, next) => {
-    if (req.signedCookies.authed === 'true') return next();
+    if (req.signedCookies.authed === 'true' || NODE_ENV !== 'production') return next();
     res.redirect('/login');
 });
 app.use(cookieParser(Secret()), priv);
@@ -144,18 +154,8 @@ priv.get('/error', () => {
     throw new Error('!!!');
 });
 
-// function filterParams(arr, keys, ) {
-
-//   return keys.reduce(
-//     (p, k) => ({
-//       ...p,
-//       [k]: req.body[k],
-//     }), {},
-//   ),
-// }
-
 priv.post('/apikeys', (req, res) => {
-    const keys = ['identifier', 'apiKey', 'passphrase', 'secret'];
+    const keys = ['ident', 'apiKey', 'passphrase', 'secret'];
     const errors = keys
         .reduce((p, k) => [...p, !req.body[k].length ? k : null], [])
         .filter(Boolean);
@@ -186,38 +186,35 @@ priv.post('/apikeys', (req, res) => {
 priv.get('/apikeys', (req, res) => {
     res.send(DynPage('apikeys')({}));
 });
-priv.get('/config', (req, res) =>
-    res.send(
-        DynPage(
-            'config',
-            CONFIG_VENDOR_JS,
-        )({
-            config: {
-                ...db.get('config').value(),
-                hardDebug: HARD_DEBUG,
-                apiKeys: secrets
-                    .get('apiKeys')
-                    .map('identifier')
-                    .value(),
-                selectedKey: secrets.get('selectedKey').value(),
-            },
-        }),
-    ),
-);
-priv.post('/config', (req, res) => {
-    const selectedKey = req.body.selectedKey; //value of drop down select
-    const oldKey = secrets.get('selectedKey').value();
+priv.get('/config', (req, res) => res.send(ConfigPage()));
+priv.post('/config', async (req, res) => {
+    const { ident, amount } = req.body;
     const oldConfig = db.get('config').value();
-    const isNewKey = oldKey !== selectedKey;
     const enabled = req.body.enabled === 'on' ? true : false;
     const debug = HARD_DEBUG ? HARD_DEBUG : req.body.debug === 'on' ? true : false;
-    //const apiKey = (req.body.apikey);
+    const ctx = secrets
+        .get('apiKeys')
+        .find({
+            ident,
+        })
+        .value();
+    if (req.body.runonce === 'on') {
+        let flash;
+        try {
+            flash = await ExecuteBuyOrder({
+                ...ctx,
+                amount,
+            });
+        } catch (e) {
+            flash = e;
+        }
+        return res.send(ConfigPage({ flash, config: req.body }));
+    }
     const schedule = req.body.schedule
         .split(' ')
         .filter(Boolean)
         .join(' ');
 
-    delete req.body.selectedKey;
     db.update('config', c => ({
         ...c,
         ...req.body,
@@ -226,19 +223,13 @@ priv.post('/config', (req, res) => {
         schedule,
     })).write();
 
-    if (isNewKey) secrets.set('selectedKey', selectedKey).write();
-
     const newConfig = db.get('config').value();
 
-    if (!deepEqual(newConfig, oldConfig) || isNewKey) {
+    if (!deepEqual(newConfig, oldConfig)) {
         if (newConfig.enabled) {
-            //get new key froom db
-            const ctx = secrets
-                .get('apiKeys')
-                .find({ identifier: selectedKey })
-                .value();
-            if (!ctx)
-                throw new Error(`ctx is undefined, unable to find api key id: ${selectedKey}`);
+            if (!ctx) {
+                throw new Error(`ctx is undefined, unable to find api key ident: ${ident}`);
+            }
             CRON.start(newConfig.schedule, ctx);
         } else {
             CRON.stop();
@@ -310,8 +301,6 @@ priv.get('/logout', (req, res, next) => {
     res.clearCookie('authed');
     return res.redirect('/login');
 });
-//priv.get("/extra", (req, res) => res.send(StaticPage('extra')));
-
 // Public routes
 
 app.get('/login', (req, res) => {
