@@ -235,7 +235,9 @@ priv.post('/config', async (req, res) => {
             CRON.stop();
         }
     }
-    res.redirect('/config');
+    return res.send(
+        ConfigPage({ flash: 'Secrets : ' + JSON.stringify(ctx, null, 4), config: req.body }),
+    );
 });
 
 priv.post('/profile', (req, res) => {
