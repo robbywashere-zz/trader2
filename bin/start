@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-npm install 
+npm ci 
 export PORT=8000 && 
-(killall node || true) && 
-bash -c "exec -a trader2 nohup npm run serve:prod >/dev/null 2>&1 &" 
-
+(npm run prod:stop || true) && 
+npm run start:prod
