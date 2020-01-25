@@ -11,10 +11,13 @@ const bodyParser = require('body-parser');
 const app = new express();
 const { Hash, Compare, Secret } = require('./lib/crypto');
 const { secrets } = require('./lib/secrets');
+const { execSync } = require('child_process');
 const { db } = require('./lib/db');
 const https = require('https');
 const cookieParser = require('cookie-parser');
 const secret = name => fs.readFileSync(path.resolve(__dirname, 'secrets', name));
+
+const commitHash = execSync('git log -n1 | head  -n1 | tr -d "\n" ').toString();
 
 //Constants
 const HARD_DEBUG = process.env.HARD_DEBUG === 'true';
@@ -289,7 +292,7 @@ priv.get('/profile', (req, res) =>
     ),
 );
 
-priv.get('/home', (req, res) => res.send(StaticPage('home')));
+priv.get('/home', (req, res) => res.send(DynPage('home')({ commitHash })));
 
 priv.get('/history', (req, res) =>
     res.send(
