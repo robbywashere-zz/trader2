@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-npm ci 
+npm ci --only=production
 export PORT=8000 && 
-(npm run prod:stop || true) && 
+(npm run stop:prod || true) && 
 npm run start:prod

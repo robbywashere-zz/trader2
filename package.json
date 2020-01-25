@@ -6,12 +6,11 @@
   "scripts": {
     "ping": "node background.js",
     "start": "NODE_ENV=development HARD_DEBUG=true nodemon --ignore node_modules --ignore store.json --ignore log.json -e js,css server.js",
-    "start:prod": "NODE_ENV=production HARD_DEBUG=true nodemon --ignore node_modules --ignore store.json --ignore log.json -e js,css server.js",
+    "start:prod": "NODE_ENV=production forever start --pidFile $HOME/.trader2.pid server.js",
     "start:dev": "npm start",
     "deploy": "git push -f web",
     "copy:keys": "scp -i ~/.ssh/raider ./secrets/* web@raider:/home/web/www/secrets",
     "serve": "npm run serve:dev",
-    "start:prod": "NODE_ENV=production forever start --pidFile $HOME/.trader2.pid server.js",
     "stop:prod": "forever stop --pidFile $HOME/.trader2.pid server.js",
     "serve:dev": "NODE_ENV=development node server.js",
     "quickdeploy": "git add . && git commit --allow-empty -m \"deploy\" && git push -f  web"
@@ -30,7 +29,9 @@
     "lowdb": "^1.0.0",
     "moment": "^2.24.0",
     "node-cron": "^2.0.3",
-    "nodemon": "^1.19.2",
     "prettycron": "^0.10.0"
+  },
+  "devDependencies": {
+    "nodemon": "^1.19.2"
   }
 }
