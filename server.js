@@ -8,6 +8,7 @@ const path = require('path');
 const fs = require('fs');
 const { ExecuteBuyOrder } = require('./lib/buyclient');
 const bodyParser = require('body-parser');
+const jsonstringify = require('./lib/jsonstringify');
 const app = new express();
 const { Hash, Compare, Secret } = require('./lib/crypto');
 const { secrets } = require('./lib/secrets');
@@ -117,7 +118,7 @@ const ConfigPage = ({ flash, config } = {}) =>
         'config',
         CONFIG_VENDOR_JS,
     )({
-        runonce_flash: flash,
+        flash,
         config: {
             ...db.get('config').value(),
             hardDebug: HARD_DEBUG,
@@ -238,9 +239,7 @@ priv.post('/config', async (req, res) => {
             CRON.stop();
         }
     }
-    return res.send(
-        ConfigPage({ flash: 'Secrets : ' + JSON.stringify(ctx, null, 4), config: req.body }),
-    );
+    return res.send(ConfigPage({ flash: 'Secrets : ' + jsonstringify(ctx), config: req.body }));
 });
 
 priv.post('/profile', (req, res) => {

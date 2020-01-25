@@ -1,25 +1,20 @@
 const { formTextInput } = require('../helpers/formTextInput');
-module.exports = ({ config, runonce_flash }) => {
+const jsonstringify = require('../../lib/jsonstringify');
+module.exports = ({ config, flash }) => {
     return /*html*/ `
   <div class="columns">
     <div class="column is-half">
       ${ConfigForm(config)}
     </div>
-  ${ConfigRunOnceFlash(runonce_flash)}
+  ${ConfigRunOnceFlash(flash)}
   </div>`;
 };
 
 function ConfigRunOnceFlash(body) {
     if (!body) return '';
-    let parseBody;
-    try {
-        parseBody = typeof body === 'string' ? body : JSON.stringify(body, null, 4);
-    } catch (e) {
-        parseBody = body;
-    }
     return /*html*/ `
 <div class="column is-half">
-  <pre>${body}</pre>
+  <pre>${jsonstringify(body)}</pre>
 </div>`;
 }
 
