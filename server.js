@@ -234,12 +234,12 @@ priv.post('/config', async (req, res) => {
             if (!ctx) {
                 throw new Error(`ctx is undefined, unable to find api key ident: ${ident}`);
             }
-            CRON.start(newConfig.schedule, ctx);
+            CRON.start(newConfig.schedule, {... ctx, amount });
         } else {
             CRON.stop();
         }
     }
-    return res.send(ConfigPage({ flash: 'Secrets : ' + jsonstringify(ctx), config: req.body }));
+    return res.send(ConfigPage({ flash: 'Saved successfully', config: req.body }));
 });
 
 priv.post('/profile', (req, res) => {
