@@ -27,7 +27,7 @@
     "haikunator": "^2.1.1",
     "later": "^1.2.0",
     "lowdb": "^1.0.0",
-    "moment": "^2.24.0",
+    "moment": "^2.29.4",
     "node-cron": "^2.0.3",
     "prettycron": "^0.10.0"
   },
